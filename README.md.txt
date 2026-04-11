@@ -1,0 +1,1 @@
+Arturic Industries Quarter metrics.
