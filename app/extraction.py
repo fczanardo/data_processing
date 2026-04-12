@@ -1,7 +1,7 @@
 import tarfile
 from pathlib import Path
 
-print("Digestion module imported successfully.")
+print("Extraction module imported successfully.")
 
 def extract_quarterly_output(destination: str | Path = "./file") -> Path:
     archive = Path(__file__).parent.parent.parent / "file" / "quarterly_output.tar.gz"
@@ -14,6 +14,6 @@ def extract_quarterly_output(destination: str | Path = "./file") -> Path:
 
     return destination
 
-def digest_data():
-    print("Digesting data...")
+def extract_data():
+    print("Extracting data...")
     extract_quarterly_output()

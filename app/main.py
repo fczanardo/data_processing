@@ -1,4 +1,4 @@
-import digestion
+import extraction
 
 if __name__ == "__main__":
-    digestion.digest_data()
+    extraction.extract_data()
