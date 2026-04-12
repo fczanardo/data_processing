@@ -38,6 +38,31 @@ python app/main.py
 
 This will extract the contents of `../file/quarterly_output.tar.gz` into a local `./file/` directory.
 
+## Environment Variables
+
+The application requires the following environment variables:
+
+| Variable | Required | Description | Example |
+|---|---|---|---|
+| `QUARTERLY_ARCHIVE_PATH` | **Yes** | Absolute path to the `.tar.gz` archive to extract | `/data/file/quarterly_output.tar.gz` |
+| `EXTRACTION_DESTINATION` | No | Directory where files will be extracted (default: `./file`) | `./temp/fileExtracted` |
+
+Set them before running:
+
+```bash
+# Linux / macOS
+export QUARTERLY_ARCHIVE_PATH="/path/to/quarterly_output.tar.gz"
+export EXTRACTION_DESTINATION="./temp/fileExtracted"
+```
+
+```powershell
+# Windows (PowerShell)
+$env:QUARTERLY_ARCHIVE_PATH = "C:\path\to\quarterly_output.tar.gz"
+$env:EXTRACTION_DESTINATION = ".\temp\fileExtracted"
+```
+
+When running via VS Code, these variables are pre-configured in `.vscode/launch.json`.
+
 ## How It Works
 
 1. `main.py` calls `extraction.extract_data()`.

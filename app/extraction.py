@@ -1,11 +1,13 @@
 import tarfile
 from pathlib import Path
 
-print("Extraction module imported successfully.")
+import config
 
-def extract_quarterly_output(destination: str | Path = "./file") -> Path:
-    archive = Path(__file__).parent.parent.parent / "file" / "quarterly_output.tar.gz"
 
+def extract_quarterly_output(
+    archive: Path = config.ARCHIVE_PATH,
+    destination: str | Path = config.EXTRACTION_DESTINATION,
+) -> Path:
     destination = Path(destination)
     destination.mkdir(parents=True, exist_ok=True)
 
@@ -13,6 +15,7 @@ def extract_quarterly_output(destination: str | Path = "./file") -> Path:
         tar.extractall(path=destination)
 
     return destination
+
 
 def extract_data():
     print("Extracting data...")
