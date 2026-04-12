@@ -1,9 +1,11 @@
 import os
 from pathlib import Path
 
+from exceptions import ConfigurationError
+
 _archive_path = os.environ.get("QUARTERLY_ARCHIVE_PATH")
 if not _archive_path:
-    raise EnvironmentError(
+    raise ConfigurationError(
         "Environment variable 'QUARTERLY_ARCHIVE_PATH' is required but was not set."
     )
 ARCHIVE_PATH = Path(_archive_path)
