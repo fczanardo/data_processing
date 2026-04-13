@@ -4,7 +4,7 @@ Arturic Industries Quarter metrics.
 
 ## Overview
 
-This project extracts, transforms, and loads quarterly output metrics for Arturic Industries. It unpacks a compressed archive (`quarterly_output.tar.gz`), parses and validates the data from multiple file formats (CSV, MDR, TXT), and writes results and error reports to the `output/` directory.
+This project extracts, transforms, and validates quarterly output metrics for Arturic Industries. It unpacks a compressed `.tar.gz` archive, parses data from multiple file formats (CSV, MDR, TXT), applies validation rules and column filters, writes the consolidated result to `output/result.txt`, and generates detailed error reports.
 
 The architecture follows **Clean Architecture**, **SOLID** principles, and the **ETL Pipeline** design pattern.
 
@@ -14,6 +14,7 @@ The architecture follows **Clean Architecture**, **SOLID** principles, and the *
 data_processing/
 ├── README.md
 ├── requirements.txt
+├── output/                            # Generated output and error reports
 └── app/
     ├── main.py                        # Entry point — configures logging and runs the pipeline
     ├── config.py                      # Loads and validates environment variables
@@ -24,8 +25,9 @@ data_processing/
     │   └── run_pipeline.py            # Assembles and executes the ETL pipeline
     └── infrastructure/
         ├── extractor.py               # TarGzExtractor — extracts .tar.gz archives
-        ├── transformer.py             # QuarterlyDataTransformer — transforms extracted data
-        └── loader.py                  # DataLoader — loads transformed data to destination
+        ├── parsers.py                 # SAParser (csv), MDRParser (mdr), WBParser (txt)
+        ├── transformer.py             # QuarterlyDataTransformer — parses, validates and filters data
+        └── loader.py                  # DataLoader — writes results and error reports to output/
 ```
 
 ## Architecture
@@ -42,7 +44,28 @@ The pipeline is composed of three abstract stages defined in `domain/etl.py`:
 
 `ETLPipeline.run()` orchestrates: `extract()` → `transform()` → `load()`.
 
-Each stage depends on an abstraction (interface), not a concrete class — following the **Dependency Inversion Principle**. To swap implementations (e.g. replace `TarGzExtractor` with a `ZipExtractor`), only `run_pipeline.py` needs to change.
+Each stage depends on an abstraction — following the **Dependency Inversion Principle**. Swapping an implementation (e.g. `TarGzExtractor` → `ZipExtractor`) requires only changing `run_pipeline.py`.
+
+### Supported File Formats
+
+| Extension | Parser | Description |
+|---|---|---|
+| `.csv` | `SAParser` | Comma-separated session data |
+| `.mdr` | `MDRParser` | JSON-structured session entries |
+| `.txt` | `WBParser` | Line-delimited metadata + entries |
+
+All parsers normalize data into a standard schema: `SOURCE_FILE`, `SESSION`, `PROCESSOR`, `DEPARTMENT`, `TIMESTAMP`, `REF`, `BIN`, `VALUE`, `CATEGORY`.
+
+### Validation Rules
+
+| Column | Rule |
+|---|---|
+| `PROCESSOR` | Must be one of: `James.L`, `Nora.K`, `Arthur.B`, `Lena.P`, `Felix.G`, `Dr.Voss`, `Clara.M` |
+| `DEPARTMENT` | Must be one of: `MDR`, `SA`, `WB` |
+| `BIN` | Must be one of: `GR`, `BL`, `AX`, `SP` |
+| `CATEGORY` | Must be one of: `alpha`, `beta`, `gamma`, `delta` |
+| `VALUE` | Must be a positive number (zero and negative values rejected) |
+| `TIMESTAMP` | Must fall within Q4 2025 (`2025-10-01` to `2025-12-31`) |
 
 ### Exception Hierarchy
 
@@ -52,6 +75,17 @@ DataProcessingError
 ├── ArchiveNotFoundError   # archive file not found
 └── ExtractionError        # failure during extraction
 ```
+
+### Output Files
+
+All files are written to the `output/` directory:
+
+| File | Content |
+|---|---|
+| `result.txt` | Final consolidated VALUE sum |
+| `INVALID_parse_warnings.txt` | Files that failed to parse (malformed JSON, bad CSV lines, etc.) |
+| `INVALID_values.txt` | Rows with non-numeric VALUE (e.g. `100.01A`) |
+| `INVALID_filtered_out.txt` | Rows rejected by column validation rules |
 
 ## Requirements
 
@@ -69,7 +103,7 @@ pip install -r requirements.txt
 | Variable | Required | Description | Example |
 |---|---|---|---|
 | `QUARTERLY_ARCHIVE_PATH` | **Yes** | Absolute path to the `.tar.gz` archive to extract | `/data/file/quarterly_output.tar.gz` |
-| `EXTRACTION_DESTINATION` | **Yes** | Directory where files will be extracted | `./temp/fileExtracted` |
+| `EXTRACTION_DESTINATION` | **Yes** | Directory where files will be extracted and read from | `./temp/fileExtracted` |
 
 Set them before running:
 
@@ -98,10 +132,10 @@ python app/main.py
 ## How It Works
 
 1. `main.py` configures logging and calls `run_pipeline.execute()`.
-2. `run_pipeline` assembles the `ETLPipeline` with concrete implementations from `infrastructure/`.
-3. `TarGzExtractor.extract()` unpacks the archive to the destination directory.
-4. `QuarterlyDataTransformer.transform()` processes the extracted files. // TODO
-5. `DataLoader.load()` persists the result. // TODO
+2. `run_pipeline` assembles `ETLPipeline` with `TarGzExtractor`, `QuarterlyDataTransformer`, and `DataLoader`.
+3. **Extract** — `TarGzExtractor` validates the archive exists and extracts it to `EXTRACTION_DESTINATION`.
+4. **Transform** — `QuarterlyDataTransformer` reads all `.csv`, `.mdr`, and `.txt` files, normalises the `TIMESTAMP` column, detects non-numeric `VALUE` entries, and applies all column filters.
+5. **Load** — `DataLoader` writes the consolidated sum to `output/result.txt` and saves error reports for parse warnings, invalid values, and filtered-out rows.
 
 ## Author
 
