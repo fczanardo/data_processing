@@ -4,7 +4,7 @@ Arturic Industries Quarter metrics.
 
 ## Overview
 
-This project extracts and processes quarterly output metrics for Arturic Industries. It unpacks a compressed archive (`quarterly_output.tar.gz`) and makes the data available for downstream analysis.
+This project extracts, transforms, and loads quarterly output metrics for Arturic Industries. It unpacks a compressed archive (`quarterly_output.tar.gz`), parses and validates the data from multiple file formats (CSV, MDR, TXT), and writes results and error reports to the `output/` directory.
 
 The architecture follows **Clean Architecture**, **SOLID** principles, and the **ETL Pipeline** design pattern.
 
@@ -53,18 +53,10 @@ DataProcessingError
 └── ExtractionError        # failure during extraction
 ```
 
-### Logging
-
-Logging is configured in `main.py` at `INFO` level. A success message is emitted after extraction:
-
-```
-INFO - Extraction completed successfully: /path/to/archive.tar.gz → /path/to/destination
-```
-
 ## Requirements
 
 - Python 3.10+
-- pandas >= 3.0.2
+- pandas
 
 Install dependencies:
 
@@ -77,7 +69,7 @@ pip install -r requirements.txt
 | Variable | Required | Description | Example |
 |---|---|---|---|
 | `QUARTERLY_ARCHIVE_PATH` | **Yes** | Absolute path to the `.tar.gz` archive to extract | `/data/file/quarterly_output.tar.gz` |
-| `EXTRACTION_DESTINATION` | No | Directory where files will be extracted (default: `./file`) | `./temp/fileExtracted` |
+| `EXTRACTION_DESTINATION` | **Yes** | Directory where files will be extracted | `./temp/fileExtracted` |
 
 Set them before running:
 
@@ -97,7 +89,7 @@ When running via VS Code, these variables are pre-configured in `.vscode/launch.
 
 ## Usage
 
-Run the data extraction from the project root:
+Run the pipeline from the project root:
 
 ```bash
 python app/main.py
@@ -107,7 +99,7 @@ python app/main.py
 
 1. `main.py` configures logging and calls `run_pipeline.execute()`.
 2. `run_pipeline` assembles the `ETLPipeline` with concrete implementations from `infrastructure/`.
-3. `ETLPipeline.run()` calls `TarGzExtractor.extract()` — validates the archive exists, extracts it to the destination, and logs success.
+3. `TarGzExtractor.extract()` unpacks the archive to the destination directory.
 4. `QuarterlyDataTransformer.transform()` processes the extracted files. // TODO
 5. `DataLoader.load()` persists the result. // TODO
 
