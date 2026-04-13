@@ -29,5 +29,3 @@ class ETLPipeline:
 
     def run(self) -> None:
         data_path = self._extractor.extract()
-        data = self._transformer.transform(data_path)
-        self._loader.load(data)
