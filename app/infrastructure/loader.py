@@ -32,17 +32,14 @@ class DataLoader(Loader):
 
         if parse_issues:
             for issue in parse_issues:
-                #logger.warning(issue)
                 (OUTPUT_ERROR_DIR / "INVALID_parse_warnings.txt").write_text("\n".join(parse_issues), encoding="utf-8")
 
         if invalid_value_issues:
             for issue in invalid_value_issues:
-                #logger.warning(issue)
                 (OUTPUT_ERROR_DIR / "INVALID_values.txt").write_text("\n".join(invalid_value_issues), encoding="utf-8")
 
         if filtered_out_issues:
             for issue in filtered_out_issues:
-                #logger.warning(issue)
                 (OUTPUT_ERROR_DIR / "INVALID_filtered_out.txt").write_text("\n".join(filtered_out_issues), encoding="utf-8")
 
         total_value = df_all["VALUE"].sum()
