@@ -2,7 +2,6 @@ import logging
 import tarfile
 from pathlib import Path
 
-import config
 from domain.etl import Extractor
 from exceptions import ArchiveNotFoundError, ExtractionError
 
@@ -10,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 class TarGzExtractor(Extractor):
-    def __init__(self, archive: Path = config.ARCHIVE_PATH, destination: Path = config.EXTRACTION_DESTINATION) -> None:
+    def __init__(self, archive: Path, destination: Path) -> None:
         self._archive = archive
         self._destination = destination
 

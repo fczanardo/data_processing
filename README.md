@@ -26,7 +26,8 @@ data_processing/
     └── infrastructure/
         ├── extractor.py               # TarGzExtractor — extracts .tar.gz archives
         ├── parsers.py                 # SAParser (csv), MDRParser (mdr), WBParser (txt)
-        ├── transformer.py             # QuarterlyDataTransformer — parses, validates and filters data
+        ├── transformer.py             # QuarterlyDataTransformer — consolidates parsed files
+        ├── validators.py              # Validation rules, filters, and COLUMN_FILTERS constants
         └── loader.py                  # DataLoader — writes results and error reports to output/
 ```
 
@@ -45,6 +46,8 @@ The pipeline is composed of three abstract stages defined in `domain/etl.py`:
 `ETLPipeline.run()` orchestrates: `extract()` → `transform()` → `load()`.
 
 Each stage depends on an abstraction — following the **Dependency Inversion Principle**. Swapping an implementation (e.g. `TarGzExtractor` → `ZipExtractor`) requires only changing `run_pipeline.py`.
+
+Validation rules (`COLUMN_FILTERS`, `TIMESTAMP_MIN/MAX`, `validate_value_column`, `apply_filters`) are isolated in `validators.py`, keeping `transformer.py` focused solely on orchestrating the consolidation pipeline — following the **Single Responsibility Principle**.
 
 ### Supported File Formats
 
